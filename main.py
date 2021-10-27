@@ -3,26 +3,86 @@
 #  By: Cieara Pfeifer, Jayden Stearns, & Jarrett Woo    #
 #########################################################
 
+#imports
+import os
+import getpass
+import hashlib
 
 
-# Try to open file "PassData.dat" (or something like that)
+# Program Opener and Information display
+PROGRAM_NAME = "Hashword"
+VERSION = "0.0.3"
+DESCRIPTION = "Password Generator and Handler"
+print("\n\t" + PROGRAM_NAME + " \tv" + VERSION + "\n\n\t" + DESCRIPTION + "\n\n")
 
 
+
+SERVICE_INFO_FILE_NAME = "ServiceData.dat"  # the desired and checked-for name of service data file
+
+
+# Try to open service data file (check if existent in current directory)
+
+if not os.path.exists(SERVICE_INFO_FILE_NAME):
+
+    #
     #if NOT opened: create new file of that name
 
-        # Ask user for master password to use for file
-        # Hash the master password
-        # store the password to the new file
+    print("Service Information File \"" + SERVICE_INFO_FILE_NAME + "\" not found. Starting creation process.\n")
+
+    serviceDataFile = open(SERVICE_INFO_FILE_NAME, "wt")
+
+
+    #
+    # Ask user for hash algorithm to use (default = SHA256)
+    hashAlgorithm = (input("Enter Desired Hash Algorithm [default: sha256]: ") or "sha256").lower()
+
+    # ensure algorithm CAN be used on this system (SHA256 is in 'guaranteed' set, for example)
+    availableAlgorithms = hashlib.algorithms_available
+
+    while(hashAlgorithm not in availableAlgorithms):
+        
+        print("\n\tInvalid Hash Algorithm \"" + hashAlgorithm + "\"\n")
+        print("\tValid Algorithms: " + availableAlgorithms + "\n")
+        hashAlgorithm = (input("Enter Desired Hash Algorithm [default: sha256]: ") or "sha256").lower()
+
+    hashlib.new(hashAlgorithm)  # Begin hash algorithm
+
+    #
+    # Ask user for master password to use for file
+    masterPasswordPlaintext = getpass.getpass("Enter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
+
+    # Hash the master password
+    hashedMasterPassword = hash.update(masterPasswordPlaintext).hexdigest()
+
+    #
+    # store the hash algo used to the new file
+    serviceDataFile.write("hash:" + hashAlgorithm)
+
+    # store the password to the new file
+    serviceDataFile.write("master:" + hashedMasterPassword)
+
+    #
+    # close file (to re-open in read mode later)
+    serviceDataFile.flush()
+    serviceDataFile.close()
+
+# END IF: File creation sequence on file not found
 
 
 
-    #if opened: try to load info from the file into program
+# load info from the file into program
+serviceDataFile = open(SERVICE_INFO_FILE_NAME, "rt")
+
 
         # Ask the user for master password
+
+
         # Hash the master password
+
+
         # compare Hash to the hash stored in password data file
 
-            # if NOT matching: ask for re-try until successful match
+            # if NOT matching: ask for re-try UNTIL successful hash-match
 
 
 
