@@ -3,26 +3,90 @@
 #  By: Cieara Pfeifer, Jayden Stearns, & Jarrett Woo    #
 #########################################################
 
+#imports
+import os
+import getpass
+import hashlib
 
 
-# Try to open file "PassData.dat" (or something like that)
+# Program Opener and Information display
+PROGRAM_NAME = "Hashword"
+VERSION = "0.1.0"
+DESCRIPTION = "Password Generator and Handler"
+print("\n\n\t\t" + PROGRAM_NAME + " \t[v" + VERSION + "]\n\n\t\t" + DESCRIPTION + "\n\n")
 
 
+
+SERVICE_INFO_FILE_PATH = "ServiceData.dat"  # the desired and checked-for name of service data file
+
+
+# Try to open service data file (check if existent in current directory)
+
+if not os.path.exists(SERVICE_INFO_FILE_PATH):
+
+    #
     #if NOT opened: create new file of that name
 
-        # Ask user for master password to use for file
-        # Hash the master password
-        # store the password to the new file
+    print("Service Information File \"" + SERVICE_INFO_FILE_PATH + "\" not found.\n\tPlease continue to create a new file.")
+
+    serviceDataFile = open(SERVICE_INFO_FILE_PATH, "wt")
+
+
+    #
+    # Ask user for hash algorithm to use (default = SHA256)
+    hashAlgorithm = (input("\n\tEnter Desired Hash Algorithm [default: sha256]: ") or 'sha256').lower()
+
+    # ensure algorithm CAN be used on this system (SHA256 is in 'guaranteed' set, for example)
+    availableAlgorithms = hashlib.algorithms_available
+
+    while(hashAlgorithm not in availableAlgorithms):
+        
+        print("\n\t\tInvalid Hash Algorithm \'" + hashAlgorithm + "\' given.\n")
+        print("\t\tValid Algorithms: ", availableAlgorithms, "\n")
+        hashAlgorithm = (input("\tEnter Desired Hash Algorithm [default: sha256]: ") or 'sha256').lower()
+
+    hash = hashlib.new(hashAlgorithm)  # Begin hash algorithm
+
+    #
+    # Ask user for master password to use for file
+    masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
+
+        # Encode string to be able to use in upcoming hash
+    masterPasswordPlaintext = masterPasswordPlaintext.encode()
+
+    # Hash the master password
+    hash.update(masterPasswordPlaintext)
+    hashedMasterPassword = hash.hexdigest()
+
+    #
+    # store the hash algo used to the new file
+    serviceDataFile.write("hash:" + hashAlgorithm + '\n')
+
+    # store the password to the new file
+    serviceDataFile.write("master:" + hashedMasterPassword + '\n')
+
+    #
+    # close file (will be re-opened in read mode shortly)
+    serviceDataFile.flush()
+    serviceDataFile.close()
+
+# END IF: File creation sequence on file not found
 
 
 
-    #if opened: try to load info from the file into program
+# load info from the file into program
+serviceDataFile = open(SERVICE_INFO_FILE_PATH, "rt")
+
 
         # Ask the user for master password
+
+
         # Hash the master password
+
+
         # compare Hash to the hash stored in password data file
 
-            # if NOT matching: ask for re-try until successful match
+            # if NOT matching: ask for re-try UNTIL successful hash-match
 
 
 
