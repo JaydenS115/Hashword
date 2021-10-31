@@ -11,58 +11,62 @@ import hashlib
 
 # Program Opener and Information display
 PROGRAM_NAME = "Hashword"
-VERSION = "0.0.3"
+VERSION = "0.1.0"
 DESCRIPTION = "Password Generator and Handler"
-print("\n\t" + PROGRAM_NAME + " \tv" + VERSION + "\n\n\t" + DESCRIPTION + "\n\n")
+print("\n\n\t\t" + PROGRAM_NAME + " \t[v" + VERSION + "]\n\n\t\t" + DESCRIPTION + "\n\n")
 
 
 
-SERVICE_INFO_FILE_NAME = "ServiceData.dat"  # the desired and checked-for name of service data file
+SERVICE_INFO_FILE_PATH = "ServiceData.dat"  # the desired and checked-for name of service data file
 
 
 # Try to open service data file (check if existent in current directory)
 
-if not os.path.exists(SERVICE_INFO_FILE_NAME):
+if not os.path.exists(SERVICE_INFO_FILE_PATH):
 
     #
     #if NOT opened: create new file of that name
 
-    print("Service Information File \"" + SERVICE_INFO_FILE_NAME + "\" not found. Starting creation process.\n")
+    print("Service Information File \"" + SERVICE_INFO_FILE_PATH + "\" not found.\n\tPlease continue to create a new file.")
 
-    serviceDataFile = open(SERVICE_INFO_FILE_NAME, "wt")
+    serviceDataFile = open(SERVICE_INFO_FILE_PATH, "wt")
 
 
     #
     # Ask user for hash algorithm to use (default = SHA256)
-    hashAlgorithm = (input("Enter Desired Hash Algorithm [default: sha256]: ") or "sha256").lower()
+    hashAlgorithm = (input("\n\tEnter Desired Hash Algorithm [default: sha256]: ") or 'sha256').lower()
 
     # ensure algorithm CAN be used on this system (SHA256 is in 'guaranteed' set, for example)
     availableAlgorithms = hashlib.algorithms_available
 
     while(hashAlgorithm not in availableAlgorithms):
         
-        print("\n\tInvalid Hash Algorithm \"" + hashAlgorithm + "\"\n")
-        print("\tValid Algorithms: " + availableAlgorithms + "\n")
-        hashAlgorithm = (input("Enter Desired Hash Algorithm [default: sha256]: ") or "sha256").lower()
+        print("\n\t\tInvalid Hash Algorithm \'" + hashAlgorithm + "\' given.\n")
+        print("\t\tValid Algorithms: ", availableAlgorithms, "\n")
+        hashAlgorithm = (input("\tEnter Desired Hash Algorithm [default: sha256]: ") or 'sha256').lower()
 
-    hashlib.new(hashAlgorithm)  # Begin hash algorithm
+    hash = hashlib.new(hashAlgorithm)  # Begin hash algorithm
 
     #
     # Ask user for master password to use for file
-    masterPasswordPlaintext = getpass.getpass("Enter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
+    masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
+
+        # Encode string to be able to use in upcoming hash
+    masterPasswordPlaintext = masterPasswordPlaintext.encode()
 
     # Hash the master password
-    hashedMasterPassword = hash.update(masterPasswordPlaintext).hexdigest()
+    hash.update(masterPasswordPlaintext)
+    hashedMasterPassword = hash.hexdigest()
 
     #
     # store the hash algo used to the new file
-    serviceDataFile.write("hash:" + hashAlgorithm)
+    serviceDataFile.write("hash:" + hashAlgorithm + '\n')
 
     # store the password to the new file
-    serviceDataFile.write("master:" + hashedMasterPassword)
+    serviceDataFile.write("master:" + hashedMasterPassword + '\n')
 
     #
-    # close file (to re-open in read mode later)
+    # close file (will be re-opened in read mode shortly)
     serviceDataFile.flush()
     serviceDataFile.close()
 
@@ -71,7 +75,7 @@ if not os.path.exists(SERVICE_INFO_FILE_NAME):
 
 
 # load info from the file into program
-serviceDataFile = open(SERVICE_INFO_FILE_NAME, "rt")
+serviceDataFile = open(SERVICE_INFO_FILE_PATH, "rt")
 
 
         # Ask the user for master password
