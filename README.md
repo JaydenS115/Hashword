@@ -1,7 +1,7 @@
 # Hashword
 Password Generator and Hasher
 
-Improves password security and provides cryptographically-unique password for any service.
+Improves password security and provides a cryptographically-unique password for any service.
 _____
 CS-47206: Data Security and Privacy - Course Project
 
