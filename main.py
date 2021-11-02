@@ -8,11 +8,13 @@ import os
 from io import TextIOWrapper
 import getpass
 import hashlib
+from tkinter import Tk
+from time import sleep
 
 
 # Program Opener and Information display
 PROGRAM_NAME = "Hashword"
-VERSION = "0.1.4"
+VERSION = "0.1.5"
 DESCRIPTION = "Password Generator and Handler"
 print("\n\n\t\t" + PROGRAM_NAME + " \t[v" + VERSION + "]\n\n\t\t" + DESCRIPTION + "\n\n")
 
@@ -75,6 +77,48 @@ def closeAndMoveFile(fileObject: TextIOWrapper):
 
 
 # END FUNCTION: closeAndMoveFile(fileObject)
+
+
+#
+# Clipboard management functions, for use at end of program
+#
+def copyToClipboard(content):
+    TkinterTk = Tk()
+    TkinterTk.withdraw()
+
+    # clear, then add to clipboard
+    TkinterTk.clipboard_clear()
+    TkinterTk.clipboard_append(content)
+
+    #TkinterTk.update()
+    TkinterTk.destroy()
+
+
+# Read (view) clipboard contents
+def getClipboardContents():
+    TkinterTk = Tk()
+    TkinterTk.withdraw()
+
+    # store clipboard contents
+    content = TkinterTk.clipboard_get()
+    TkinterTk.destroy()
+
+    return content
+
+
+# Clear (remove) clipboard contents
+def clearClipboard():
+    TkinterTk = Tk()
+    TkinterTk.withdraw()
+
+    # clear clipboard contents
+    TkinterTk.clipboard_clear()
+
+    #TkinterTk.update()
+    TkinterTk.destroy()
+
+
+# END FUNCTIONS: clipboard management
 
 
 
@@ -164,8 +208,13 @@ serviceDataFile = open(SERVICE_INFO_FILE_PATH, "rt")
 
 
 
-
+#
 # Ask the user which service they want their password for
+serviceName = (input("\nEnter Service Name: ") or '')
+
+while(serviceName == ''):
+    print("\n\tPlease enter the name of the service you would like to retrieve your password for.")
+    serviceName = (input("\nEnter Service Name: ") or '')
 
 
     # if service NOT found in Data File:
@@ -191,9 +240,20 @@ serviceDataFile.close()
 
 
 
-# Copy the password to the user's clipboard (for ease-of-use, only if possible)
+# Copy the password to the user's clipboard
+copyToClipboard(hashedMasterPassword)
 
+print("\n\t\tPassword for \"" + serviceName + "\" copied to clipboard.\n")
 
 
 # Wait a few seconds, then clear the user's clipboard to clear the password data
+sleep(10)
+
+if(getClipboardContents() == hashedMasterPassword):
+    clearClipboard()
+
+
+# clean memory for security
+hashedMasterPassword = ''
+del hashedMasterPassword
 
