@@ -3,7 +3,7 @@
 #  By: Cieara Pfeifer, Jayden Stearns, & Jarrett Woo    #
 #########################################################
 
-#imports
+
 import os
 from io import TextIOWrapper
 import getpass
@@ -14,13 +14,14 @@ import pyperclip
 
 # Program Opener and Information display
 PROGRAM_NAME = "Hashword"
-VERSION = "0.1.6"
+VERSION = "0.2.0"
 DESCRIPTION = "Password Generator and Handler"
 print("\n\n\t\t" + PROGRAM_NAME + " \t[v" + VERSION + "]\n\n\t\t" + DESCRIPTION + "\n\n")
 
 
-
-SERVICE_INFO_FILE_PATH = "ServiceData.dat"  # the desired and checked-for name of service data file
+#
+# the desired and checked-for name of service data file
+SERVICE_INFO_FILE_PATH = "ServiceData.dat"
 
 
 #
@@ -175,10 +176,10 @@ serviceName = input("\nEnter Service Name: ")
 
 while(serviceName == ''): # re-try until you get an input
     print("\n\tPlease enter the name of the service you would like to retrieve your password for.")
-    serviceName = (input("\nEnter Service Name: ") or '')
+    serviceName = input("\nEnter Service Name: ")
 
 
-# if service NOT found in Data File:
+# if service NOT found from Data File's original reading:
 if(serviceName not in serviceDictionary):
 
     # Notify the user that they need to register the new service
@@ -197,15 +198,18 @@ if(serviceName not in serviceDictionary):
     serviceDataFile.write(serviceName + ':' + str(maxPassLength) + '\n')
     serviceDataFile.close()
 
+# END: registration of new service
 
 
 
-# Take the selected service's name and append it to end of master password given earlier
+#
+# Take the selected service's name and append it to end of master password plaintext given earlier
 
 # Hash the newly-concatenated string, resulting in the service's password
 
 
 # Trim the resulting hash sequence to the max length specified in the data file
+
 
 
 #
