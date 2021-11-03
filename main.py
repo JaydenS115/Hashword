@@ -14,7 +14,7 @@ import pyperclip
 
 # Program Opener and Information display
 PROGRAM_NAME = "Hashword"
-VERSION = "0.1.5"
+VERSION = "0.1.6"
 DESCRIPTION = "Password Generator and Handler"
 print("\n\n\t\t" + PROGRAM_NAME + " \t[v" + VERSION + "]\n\n\t\t" + DESCRIPTION + "\n\n")
 
@@ -182,13 +182,13 @@ while(serviceName == ''): # re-try until you get an input
 if(serviceName not in serviceDictionary):
 
     # Notify the user that they need to register the new service
-    print("\n\tService \"" + serviceName + "\" not registered.\n\t\tBeginning Registration.")
+    print("\n\tService \"" + serviceName + "\" not registered.\n\t\tBeginning Registration to file \"" + serviceDataFile.name + "\".")
 
     # Ask the user for the max length allowed for the password
     maxPassLength = input("\n\tEnter Maximum " + serviceName + " Password Length: ")
 
     while(str(maxPassLength) == ''): # re-try until you get an input
-        print("\n\tPlease enter the maximum length for a " + serviceName + " password.")
+        print("\n\tPlease enter the maximum character length for a " + serviceName + " password.")
         maxPassLength = input("\n\tEnter Maximum " + serviceName + " Password Length: ")
         
     #
@@ -208,11 +208,11 @@ if(serviceName not in serviceDictionary):
 # Trim the resulting hash sequence to the max length specified in the data file
 
 
-
+#
 # Copy the password to the user's clipboard
 pyperclip.copy(hashedMasterPassword)
 
-print("\n\t\tCopied Password for \"" + serviceName + "\" to Clipboard.\n")
+print("\n\t\tCopied " + serviceName + " Password to Clipboard.\n")
 
 
 # Wait a few seconds, then clear the user's clipboard to clear the password data
