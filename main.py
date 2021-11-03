@@ -133,32 +133,45 @@ if not os.path.exists(SERVICE_INFO_FILE_PATH):
     serviceDataFile.close()
 
 # END IF: File creation sequence on file not found
-
-
-
-#
+if os.path.exists(SERVICE_INFO_FILE_PATH):
 # load info from the file into program
-serviceDataFile = open(SERVICE_INFO_FILE_PATH, "rt")
+  serviceDataFile = open(SERVICE_INFO_FILE_PATH, "rt")
 
 #
 # Read from file and store for use in program
 # Info is stored in this order: hash algorithm, master password's hash, 
 #   then all of the services and their maximum password lengths (to truncate the password to)
-
+for fileMasterPassword in serviceDataFile:
+    print(fileMasterPassword) #test line
+    x = fileMasterPassword.find(":")
+    print(x)
 
 #hashAlgorithm = 
 #hashedMasterPassword = 
 #serviceDictionary = 
 
 
-
+hash = hashlib.new(hashAlgorithm)
         # Ask the user for master password
+          # Ask user for master password to use for file
+masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
 
+        # Encode string to be able to use in upcoming hash
+masterPasswordPlaintext = masterPasswordPlaintext.encode()
+
+    # Hash the master password
+hash.update(masterPasswordPlaintext)
+hashedMasterPassword = hash.hexdigest()
+
+    # securely clean up the plaintext password
+    # to remove it from memory and then from accidental use
+masterPasswordPlaintext = ""
+del masterPasswordPlaintext
 
         # Hash the master password
 
-
         # compare Hash to the hash stored in password data file
+       # if hashedMasterPassword ==
 
             # if NOT matching: ask for re-try UNTIL successful hash-match
 
