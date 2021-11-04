@@ -3,22 +3,25 @@
 #  By: Cieara Pfeifer, Jayden Stearns, & Jarrett Woo    #
 #########################################################
 
-#imports
+
 import os
 from io import TextIOWrapper
 import getpass
 import hashlib
+from time import sleep
+import pyperclip
 
 
 # Program Opener and Information display
 PROGRAM_NAME = "Hashword"
-VERSION = "0.1.4"
+VERSION = "0.2.0"
 DESCRIPTION = "Password Generator and Handler"
 print("\n\n\t\t" + PROGRAM_NAME + " \t[v" + VERSION + "]\n\n\t\t" + DESCRIPTION + "\n\n")
 
 
-
-SERVICE_INFO_FILE_PATH = "ServiceData.dat"  # the desired and checked-for name of service data file
+#
+# the desired and checked-for name of service data file
+SERVICE_INFO_FILE_PATH = "ServiceData.dat"
 
 
 #
@@ -148,17 +151,23 @@ for fileMasterPassword in serviceDataFile:
 
 #hashAlgorithm = 
 #hashedMasterPassword = 
-#serviceDictionary = 
+serviceDictionary = {}
 
 
+<<<<<<< HEAD
 hash = hashlib.new(hashAlgorithm)
         # Ask the user for master password
           # Ask user for master password to use for file
 masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
+=======
+#close service info file (as we're done with it for this execution)
+
+>>>>>>> 50ba6b5c81f22c2867858da48502d5e3f82aa47b
 
         # Encode string to be able to use in upcoming hash
 masterPasswordPlaintext = masterPasswordPlaintext.encode()
 
+<<<<<<< HEAD
     # Hash the master password
 hash.update(masterPasswordPlaintext)
 hashedMasterPassword = hash.hexdigest()
@@ -167,35 +176,60 @@ hashedMasterPassword = hash.hexdigest()
     # to remove it from memory and then from accidental use
 masterPasswordPlaintext = ""
 del masterPasswordPlaintext
+=======
+# Ask the user for master password
+>>>>>>> 50ba6b5c81f22c2867858da48502d5e3f82aa47b
 
         # Hash the master password
 
+<<<<<<< HEAD
         # compare Hash to the hash stored in password data file
        # if hashedMasterPassword ==
+=======
+# Hash the master password
+>>>>>>> 50ba6b5c81f22c2867858da48502d5e3f82aa47b
 
-            # if NOT matching: ask for re-try UNTIL successful hash-match
+
+# compare Hash to the hash stored in password data file
+
+    # if NOT matching: ask for re-try UNTIL successful hash-match
 
 
 
-
+#
 # Ask the user which service they want their password for
+serviceName = input("\nEnter Service Name: ")
+
+while(serviceName == ''): # re-try until you get an input
+    print("\n\tPlease enter the name of the service you would like to retrieve your password for.")
+    serviceName = input("\nEnter Service Name: ")
 
 
-    # if service NOT found in Data File:
-    
+# if service NOT found from Data File's original reading:
+if(serviceName not in serviceDictionary):
 
-        # Notify the user that they need to register the new service
-        # Ask the user for the max length allowed for the password
+    # Notify the user that they need to register the new service
+    print("\n\tService \"" + serviceName + "\" not registered.\n\t\tBeginning Registration to file \"" + serviceDataFile.name + "\".")
+
+    # Ask the user for the max length allowed for the password
+    maxPassLength = input("\n\tEnter Maximum " + serviceName + " Password Length: ")
+
+    while(str(maxPassLength) == ''): # re-try until you get an input
+        print("\n\tPlease enter the maximum character length for a " + serviceName + " password.")
+        maxPassLength = input("\n\tEnter Maximum " + serviceName + " Password Length: ")
         
-        # Enter this service into the data file w/ the information
+    #
+    # Append this service into the data file w/ the information
+    serviceDataFile = open(SERVICE_INFO_FILE_PATH, "at")
+    serviceDataFile.write(serviceName + ':' + str(maxPassLength) + '\n')
+    serviceDataFile.close()
 
-    
-
-#close service info file (done with it for this execution)
-serviceDataFile.close()
+# END: registration of new service
 
 
-# Take the selected service's name and append it to end of master password given earlier
+
+#
+# Take the selected service's name and append it to end of master password plaintext given earlier
 
 # Hash the newly-concatenated string, resulting in the service's password
 
@@ -204,9 +238,22 @@ serviceDataFile.close()
 
 
 
-# Copy the password to the user's clipboard (for ease-of-use, only if possible)
+#
+# Copy the password to the user's clipboard
+pyperclip.copy(hashedMasterPassword)
 
+print("\n\t\tCopied " + serviceName + " Password to Clipboard.\n")
 
 
 # Wait a few seconds, then clear the user's clipboard to clear the password data
+sleep(10)
+
+if(pyperclip.paste() == hashedMasterPassword):
+    pyperclip.copy("")
+
+
+#
+# cleanup values in memory for security purposes
+hashedMasterPassword = ''
+del hashedMasterPassword
 
