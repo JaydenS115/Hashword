@@ -8,6 +8,7 @@ import os
 from io import TextIOWrapper
 import getpass
 import hashlib
+import codecs
 from time import sleep
 import pyperclip
 
@@ -80,6 +81,35 @@ def closeAndMoveFile(fileObject: TextIOWrapper):
 # END FUNCTION: closeAndMoveFile(fileObject)
 
 
+def bytesToString(b):
+    s = str(codecs.encode(b,"hex"),"utf-8")
+    return s
+
+# def stringToBytes(s):
+#     b = codecs.decode(bytes(s,"utf-8"), "hex")
+#     return b
+
+# FUNCTION getMasterPass(masterPasswordPlaintext)
+# Takes a string argument as the password and hashes it.
+# Returns a hashed string
+# (attempt to make code a little more DRY)
+
+def getMasterPass(masterPasswordPlaintext, hashAlgorithm='sha256'):
+    
+    # Encode string to be able to use in upcoming hash    
+    hash = hashlib.pbkdf2_hmac(hashAlgorithm, masterPasswordPlaintext.encode('utf-8'), b'', 1)
+    hash = bytesToString(hash)
+    return hash
+
+# END FUNCTION: getMasterPass()
+
+# FUNCTION: verifyPass(str: password)
+# Takes a string password and a string hash as arguments 
+# Hashes password and compares with hash
+# Returns true if hashes are equal
+def verifyPass(password, savedHash, hashAlgorithm='sha256'):
+    hash = getMasterPass(password, hashAlgorithm)
+    return hash == savedHash
 
 #
 # Try to open service data file (check if existent in current directory)
@@ -94,7 +124,8 @@ if not os.path.exists(SERVICE_INFO_FILE_PATH):
     hashAlgorithm = (input("\n\tEnter Desired Hash Algorithm [default: sha256]: ") or 'sha256').lower()
 
     # ensure algorithm CAN be used on this system (SHA256 is in 'guaranteed' set, for example)
-    availableAlgorithms = hashlib.algorithms_available
+    # availableAlgorithms = hashlib.algorithms_available
+    availableAlgorithms = hashlib.algorithms_guaranteed
 
     while(hashAlgorithm not in availableAlgorithms):
         
@@ -102,18 +133,20 @@ if not os.path.exists(SERVICE_INFO_FILE_PATH):
         print("\t\tValid Algorithms: ", availableAlgorithms, "\n")
         hashAlgorithm = (input("\tEnter Desired Hash Algorithm [default: sha256]: ") or 'sha256').lower()
 
-    hash = hashlib.new(hashAlgorithm)  # Begin hash algorithm
+    # hash = hashlib.new(hashAlgorithm)  # Begin hash algorithm
 
     #
     # Ask user for master password to use for file
     masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
 
         # Encode string to be able to use in upcoming hash
-    masterPasswordPlaintext = masterPasswordPlaintext.encode()
+    # masterPasswordPlaintext = masterPasswordPlaintext.encode()
+
+    hashedMasterPassword = getMasterPass(masterPasswordPlaintext, hashAlgorithm)
 
     # Hash the master password
-    hash.update(masterPasswordPlaintext)
-    hashedMasterPassword = hash.hexdigest()
+    # hash.update(masterPasswordPlaintext)
+    # hashedMasterPassword = hash.hexdigest()
 
     # securely clean up the plaintext password
     # to remove it from memory and then from accidental use
@@ -148,26 +181,27 @@ serviceDataFile = open(SERVICE_INFO_FILE_PATH, "rt")
 # Info is stored in this order: hash algorithm, master password's hash, 
 #   then all of the services and their maximum password lengths (to truncate the password to)
 
+# Use split() function to parse strings?
 
-#hashAlgorithm = 
-#hashedMasterPassword = 
+hashAlgorithm = serviceDataFile.readline().split(':')[1].strip()
+hashedMasterPassword = serviceDataFile.readline().split(':')[1].strip()
 serviceDictionary = {}
-
+for line in serviceDataFile:
+    service = line.split(':')
+    serviceDictionary[service[0]] = service[-1]
 
 #close service info file (as we're done with it for this execution)
-
+serviceDataFile.close()
 
 
 # Ask the user for master password
-
-
-# Hash the master password
-
-
+print(f"MasterHash is : {hashedMasterPassword}") # debug print
+masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
 # compare Hash to the hash stored in password data file
-
+while not verifyPass(masterPasswordPlaintext, hashedMasterPassword, hashAlgorithm):
     # if NOT matching: ask for re-try UNTIL successful hash-match
-
+    print("\tLogin failed\n\tPlease try again")
+    masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
 
 
 #
