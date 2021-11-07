@@ -202,8 +202,14 @@ if(serviceName not in serviceDictionary):
     print("\n\tService \"" + serviceName + "\" not registered.\n\t\tBeginning Registration to file \"" + serviceDataFile.name + "\".")
 
     # Ask the user for the max length allowed for the password
-    maxPassLength = input("\n\tEnter Maximum " + serviceName + " Password Length: ")
-    # !! Should probably assert that input is type(int) !!
+    try:
+        # Tries to enforce user input is int
+        maxPassLength = int(input("\n\tEnter Maximum " + serviceName + " Password Length: "))
+
+    except Exception as e:
+        # Handles exception if input is not int by providing a default value
+        print(f"Error: {e}\n Setting length to default 16")
+        maxPassLength = 16
 
     while(str(maxPassLength) == ''): # re-try until you get an input
         print("\n\tPlease enter the maximum character length for a " + serviceName + " password.")
@@ -215,18 +221,23 @@ if(serviceName not in serviceDictionary):
     serviceDataFile.write(serviceName + ':' + str(maxPassLength) + '\n')
     serviceDataFile.close()
 
+
+    # Add newly registered service to serviceDictionary
+    serviceDictionary[serviceName] = maxPassLength
 # END: registration of new service
 
 
 
 #
 # Take the selected service's name and append it to end of master password plaintext given earlier
+servicePasswordPlaintext = masterPasswordPlaintext + serviceName
 
 # Hash the newly-concatenated string, resulting in the service's password
-
+hashedServicePass = getMasterPass(servicePasswordPlaintext, hashAlgorithm)
 
 # Trim the resulting hash sequence to the max length specified in the data file
-
+hashedMasterPassword = hashedServicePass[:int(serviceDictionary[serviceName]) - 2]
+hashedMasterPassword += "&J"
 
 
 #
