@@ -1,5 +1,5 @@
 # Hashword
-Cryptographics Password Manager and Generator
+Cryptographic Password Manager and Generator
 
 Improves password security by providing a cryptographically-unique password for any service.
 _____
