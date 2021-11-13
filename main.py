@@ -1,4 +1,5 @@
 #########################################################
+#  Hashword - Cryptographic Password Manager            #
 #  CS-47206: Data Security and Privacy - Course Project #
 #  By: Cieara Pfeifer, Jayden Stearns, & Jarrett Woo    #
 #########################################################
@@ -14,8 +15,8 @@ import pyperclip
 
 # Program Opener and Information display
 PROGRAM_NAME = "Hashword"
-VERSION = "0.3.1"
-DESCRIPTION = "Password Generator and Handler"
+VERSION = "0.3.2"
+DESCRIPTION = "Cryptographic Password Manager and Generator"
 print("\n\n\t\t" + PROGRAM_NAME + " \t[v" + VERSION + "]\n\n\t\t" + DESCRIPTION + "\n\n")
 
 #
@@ -141,12 +142,12 @@ if not os.path.exists(SERVICE_INFO_FILE_PATH):
     while(hashAlgorithm not in availableAlgorithms):
         
         print("\n\t\tInvalid Hash Algorithm \'" + hashAlgorithm + "\' given.\n")
-        print("\t\tValid Algorithms: ", availableAlgorithms, "\n")
-        hashAlgorithm = (input("\tEnter Desired Hash Algorithm [default: sha256]: ") or 'sha256').lower()
+        print("\t\tValid Algorithms: ", availableAlgorithms)
+        hashAlgorithm = (input("\n\tEnter Desired Hash Algorithm [default: sha256]: ") or 'sha256').lower()
 
     #
     # Ask user for master password to use for file
-    masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
+    masterPasswordPlaintext = getpass.getpass("\tInput New " + PROGRAM_NAME + " Master Password [input is hidden]: ")
 
     # Hash the master password
     hashedMasterPassword = getMasterPass(masterPasswordPlaintext, hashAlgorithm)
@@ -173,7 +174,7 @@ if not os.path.exists(SERVICE_INFO_FILE_PATH):
 
     # notify user of successful creation
     print("\n\t\tService Information File " + SERVICE_INFO_FILE_PATH + " Created.")
-    print("\n\tContinuing to password generation.\n")
+    print("\nContinuing to Service Selection and Password Generation.\n")
 
 # END IF: File creation sequence on file not found
 
@@ -201,13 +202,16 @@ serviceDataFile.close()
 
 
 # Ask the user for master password
-masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
+masterPasswordPlaintext = getpass.getpass("Enter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
 
 # compare Hash to the hash stored in password data file
 while not verifyPass(masterPasswordPlaintext, hashedMasterPassword, hashAlgorithm):
     # if NOT matching: ask for re-try UNTIL successful hash-match
-    print("\tLogin failed\n\tPlease try again")
-    masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
+    print("\n\tLogin Failed\n\tPlease try again.\n")
+    masterPasswordPlaintext = getpass.getpass("Enter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
+
+# Notify user of successful login
+print("\n\tLogin Successful\n")
 
 #
 # Ask the user which service they want their password for
@@ -222,7 +226,7 @@ while(serviceName == ''): # re-try until you get an input
 if(serviceName not in serviceDictionary):
 
     # Notify the user that they need to register the new service
-    print("\n\tService \"" + serviceName + "\" not registered.\n\t\tBeginning Registration to file \"" + serviceDataFile.name + "\".")
+    print("\nService \"" + serviceName + "\" not registered.\n\tBeginning Registration to file \"" + serviceDataFile.name + "\".")
 
     # Ask the user for the max length allowed for the password
     try:
@@ -243,6 +247,10 @@ if(serviceName not in serviceDictionary):
     serviceDataFile = open(SERVICE_INFO_FILE_PATH, "at")
     serviceDataFile.write(serviceName + ':' + str(maxPassLength) + '\n')
     serviceDataFile.close()
+
+
+    # notify user of successful registration of new service to file
+    print("\nNew Service \"" + serviceName + "\" registered to Service Information File.")
 
 
     # Add newly-registered service to serviceDictionary
@@ -277,7 +285,7 @@ del hashedServicePass
 # Copy the password to the user's clipboard
 pyperclip.copy(hashedMasterPassword)
 
-print("\n\t\tCopied " + serviceName + " Password to Clipboard.\n")
+print("\n\n\tCopied " + serviceName + " Password to Clipboard.\n")
 
 
 # Wait a few seconds, then clear the user's clipboard to clear the password data
