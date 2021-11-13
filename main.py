@@ -14,10 +14,9 @@ import pyperclip
 
 # Program Opener and Information display
 PROGRAM_NAME = "Hashword"
-VERSION = "0.2.0"
+VERSION = "0.3.1"
 DESCRIPTION = "Password Generator and Handler"
 print("\n\n\t\t" + PROGRAM_NAME + " \t[v" + VERSION + "]\n\n\t\t" + DESCRIPTION + "\n\n")
-
 
 #
 # the desired and checked-for name of service data file
@@ -25,7 +24,7 @@ SERVICE_INFO_FILE_PATH = "ServiceData.dat"
 
 
 #
-# Function: closeAndMoveFile(fileObject)
+# FUNCTION: closeAndMoveFile(fileObject)
 # If something "wrong" is found with a service info file,
 # invoke this function on the fileObject that has the file .open(),
 # and this function will close the file, move its contents elsewhere,
@@ -48,13 +47,11 @@ def closeAndMoveFile(fileObject: TextIOWrapper):
     # get desired filename for service info file
     svcFileInfo = filePath.split('.', 1)
 
-
     svcFileName = svcFileInfo[0]
     svcFileName = "[OLD]-"
 
     svcFileExt = "."
     svcFileExt += svcFileInfo[1]
-
 
     #
     # find next available [OLD] filename to store to
@@ -76,33 +73,56 @@ def closeAndMoveFile(fileObject: TextIOWrapper):
     if(filePath == SERVICE_INFO_FILE_PATH):
         os.remove(filePath)
 
-
 # END FUNCTION: closeAndMoveFile(fileObject)
 
 
+#
 # FUNCTION getMasterPass(str: masterPasswordPlaintext, str: hashAlgorithm='sha256')
 # Takes a string argument as the password and hashes it.
 # Returns a hashed string
 # (attempt to make code a little more DRY)
 
 def getMasterPass(masterPasswordPlaintext, hashAlgorithm='sha256'):
+
+    # Initialize Hash Algorithm and hash the input
     hash = hashlib.new(hashAlgorithm)
     hash.update(masterPasswordPlaintext.encode())
+
+    # done with password plaintext, remove it from memory
+    masterPasswordPlaintext = ''
+    del masterPasswordPlaintext
+
+    #get the output from hashing
     hashedMasterPassword = hash.hexdigest()
     return hashedMasterPassword
 
 # END FUNCTION: getMasterPass()
 
+
+#
 # FUNCTION: verifyPass(str: password, str: savedHash, str: hashAlgorithm='sha256')
 # Takes a string password and a string hash as arguments 
 # Hashes password and compares with saved hash
 # Returns true if hashes are equal
+
 def verifyPass(password, savedHash, hashAlgorithm='sha256'):
+
+    # hash given password and store the result
     hash = getMasterPass(password, hashAlgorithm)
+
+    # clear the plaintext password from memory
+    password = ''
+    del password
+
+    # return match between resultant hash and stored hash
     return hash == savedHash
 
 # END FUNCTION: verifyPass()
 
+
+
+#
+# MAIN SECTION: Executed when program is run
 #
 # Try to open service data file (check if existent in current directory)
 if not os.path.exists(SERVICE_INFO_FILE_PATH):
@@ -124,8 +144,6 @@ if not os.path.exists(SERVICE_INFO_FILE_PATH):
         print("\t\tValid Algorithms: ", availableAlgorithms, "\n")
         hashAlgorithm = (input("\tEnter Desired Hash Algorithm [default: sha256]: ") or 'sha256').lower()
 
-    # hash = hashlib.new(hashAlgorithm)  # Begin hash algorithm
-
     #
     # Ask user for master password to use for file
     masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
@@ -135,7 +153,7 @@ if not os.path.exists(SERVICE_INFO_FILE_PATH):
 
     # securely clean up the plaintext password
     # to remove it from memory and then from accidental use
-    masterPasswordPlaintext = ""
+    masterPasswordPlaintext = ''
     del masterPasswordPlaintext
 
     #
@@ -153,6 +171,10 @@ if not os.path.exists(SERVICE_INFO_FILE_PATH):
     serviceDataFile.flush()
     serviceDataFile.close()
 
+    # notify user of successful creation
+    print("\n\t\tService Information File " + SERVICE_INFO_FILE_PATH + " Created.")
+    print("\n\tContinuing to password generation.\n")
+
 # END IF: File creation sequence on file not found
 
 
@@ -166,14 +188,15 @@ serviceDataFile = open(SERVICE_INFO_FILE_PATH, "rt")
 # Info is stored in this order: hash algorithm, master password's hash, 
 #   then all of the services and their maximum password lengths (to truncate the password to)
 
-hashAlgorithm = serviceDataFile.readline().split(':')[1].strip()
-hashedMasterPassword = serviceDataFile.readline().split(':')[1].strip()
+hashAlgorithm = serviceDataFile.readline().split(':')[1].strip()        # hash algorithm used
+hashedMasterPassword = serviceDataFile.readline().split(':')[1].strip() # hash of master password
+
 serviceDictionary = {}
 for line in serviceDataFile:
     service = line.split(':')
     serviceDictionary[service[0]] = service[-1].strip()
 
-#close service info file (as we're done with it for this execution)
+#close service info file (as we're done reading from it for this execution)
 serviceDataFile.close()
 
 
@@ -216,14 +239,15 @@ if(serviceName not in serviceDictionary):
         maxPassLength = input("\n\tEnter Maximum " + serviceName + " Password Length: ")
         
     #
-    # Append this service into the data file w/ the information
+    # APPEND this service into the data file w/ the information
     serviceDataFile = open(SERVICE_INFO_FILE_PATH, "at")
     serviceDataFile.write(serviceName + ':' + str(maxPassLength) + '\n')
     serviceDataFile.close()
 
 
-    # Add newly registered service to serviceDictionary
+    # Add newly-registered service to serviceDictionary
     serviceDictionary[serviceName] = maxPassLength
+
 # END: registration of new service
 
 
@@ -239,6 +263,15 @@ hashedServicePass = getMasterPass(servicePasswordPlaintext, hashAlgorithm)
 hashedMasterPassword = hashedServicePass[:int(serviceDictionary[serviceName]) - 2]
 hashedMasterPassword += "&J"
 
+#
+# clean up all now-unneeded password text from memory, for improved security
+masterPasswordPlaintext = ''
+del masterPasswordPlaintext
+servicePasswordPlaintext = ''
+del servicePasswordPlaintext
+hashedServicePass = ''
+del hashedServicePass
+
 
 #
 # Copy the password to the user's clipboard
@@ -248,14 +281,17 @@ print("\n\t\tCopied " + serviceName + " Password to Clipboard.\n")
 
 
 # Wait a few seconds, then clear the user's clipboard to clear the password data
+# (for security - to avoid accidental pasting of service's password elsewhere)
 sleep(10)
 
-if(pyperclip.paste() == hashedMasterPassword):
-    pyperclip.copy("")
+if(pyperclip.paste() == hashedMasterPassword):  # if clipboard is now still the master pass
+    pyperclip.copy("")  # Clear clipboard contents
 
 
 #
-# cleanup values in memory for security purposes
+# lastly, cleanup values in memory for security purposes
 hashedMasterPassword = ''
 del hashedMasterPassword
 
+
+# END: main section of code
