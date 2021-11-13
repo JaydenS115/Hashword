@@ -80,6 +80,28 @@ def closeAndMoveFile(fileObject: TextIOWrapper):
 # END FUNCTION: closeAndMoveFile(fileObject)
 
 
+# FUNCTION getMasterPass(str: masterPasswordPlaintext, str: hashAlgorithm='sha256')
+# Takes a string argument as the password and hashes it.
+# Returns a hashed string
+# (attempt to make code a little more DRY)
+
+def getMasterPass(masterPasswordPlaintext, hashAlgorithm='sha256'):
+    hash = hashlib.new(hashAlgorithm)
+    hash.update(masterPasswordPlaintext.encode())
+    hashedMasterPassword = hash.hexdigest()
+    return hashedMasterPassword
+
+# END FUNCTION: getMasterPass()
+
+# FUNCTION: verifyPass(str: password, str: savedHash, str: hashAlgorithm='sha256')
+# Takes a string password and a string hash as arguments 
+# Hashes password and compares with saved hash
+# Returns true if hashes are equal
+def verifyPass(password, savedHash, hashAlgorithm='sha256'):
+    hash = getMasterPass(password, hashAlgorithm)
+    return hash == savedHash
+
+# END FUNCTION: verifyPass()
 
 #
 # Try to open service data file (check if existent in current directory)
@@ -102,18 +124,14 @@ if not os.path.exists(SERVICE_INFO_FILE_PATH):
         print("\t\tValid Algorithms: ", availableAlgorithms, "\n")
         hashAlgorithm = (input("\tEnter Desired Hash Algorithm [default: sha256]: ") or 'sha256').lower()
 
-    hash = hashlib.new(hashAlgorithm)  # Begin hash algorithm
+    # hash = hashlib.new(hashAlgorithm)  # Begin hash algorithm
 
     #
     # Ask user for master password to use for file
     masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
 
-        # Encode string to be able to use in upcoming hash
-    masterPasswordPlaintext = masterPasswordPlaintext.encode()
-
     # Hash the master password
-    hash.update(masterPasswordPlaintext)
-    hashedMasterPassword = hash.hexdigest()
+    hashedMasterPassword = getMasterPass(masterPasswordPlaintext, hashAlgorithm)
 
     # securely clean up the plaintext password
     # to remove it from memory and then from accidental use
@@ -148,27 +166,25 @@ serviceDataFile = open(SERVICE_INFO_FILE_PATH, "rt")
 # Info is stored in this order: hash algorithm, master password's hash, 
 #   then all of the services and their maximum password lengths (to truncate the password to)
 
-
-#hashAlgorithm = 
-#hashedMasterPassword = 
+hashAlgorithm = serviceDataFile.readline().split(':')[1].strip()
+hashedMasterPassword = serviceDataFile.readline().split(':')[1].strip()
 serviceDictionary = {}
-
+for line in serviceDataFile:
+    service = line.split(':')
+    serviceDictionary[service[0]] = service[-1].strip()
 
 #close service info file (as we're done with it for this execution)
-
+serviceDataFile.close()
 
 
 # Ask the user for master password
-
-
-# Hash the master password
-
+masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
 
 # compare Hash to the hash stored in password data file
-
+while not verifyPass(masterPasswordPlaintext, hashedMasterPassword, hashAlgorithm):
     # if NOT matching: ask for re-try UNTIL successful hash-match
-
-
+    print("\tLogin failed\n\tPlease try again")
+    masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
 
 #
 # Ask the user which service they want their password for
@@ -186,7 +202,14 @@ if(serviceName not in serviceDictionary):
     print("\n\tService \"" + serviceName + "\" not registered.\n\t\tBeginning Registration to file \"" + serviceDataFile.name + "\".")
 
     # Ask the user for the max length allowed for the password
-    maxPassLength = input("\n\tEnter Maximum " + serviceName + " Password Length: ")
+    try:
+        # Tries to enforce user input is int
+        maxPassLength = int(input("\n\tEnter Maximum " + serviceName + " Password Length: "))
+
+    except Exception as e:
+        # Handles exception if input is not int by providing a default value
+        print(f"Error: {e}\n Setting length to default 16")
+        maxPassLength = 16
 
     while(str(maxPassLength) == ''): # re-try until you get an input
         print("\n\tPlease enter the maximum character length for a " + serviceName + " password.")
@@ -198,18 +221,23 @@ if(serviceName not in serviceDictionary):
     serviceDataFile.write(serviceName + ':' + str(maxPassLength) + '\n')
     serviceDataFile.close()
 
+
+    # Add newly registered service to serviceDictionary
+    serviceDictionary[serviceName] = maxPassLength
 # END: registration of new service
 
 
 
 #
 # Take the selected service's name and append it to end of master password plaintext given earlier
+servicePasswordPlaintext = masterPasswordPlaintext + serviceName
 
 # Hash the newly-concatenated string, resulting in the service's password
-
+hashedServicePass = getMasterPass(servicePasswordPlaintext, hashAlgorithm)
 
 # Trim the resulting hash sequence to the max length specified in the data file
-
+hashedMasterPassword = hashedServicePass[:int(serviceDictionary[serviceName]) - 2]
+hashedMasterPassword += "&J"
 
 
 #
