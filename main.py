@@ -154,75 +154,31 @@ if not os.path.exists(SERVICE_INFO_FILE_PATH):
     serviceDataFile.close()
 
 # END IF: File creation sequence on file not found
-if os.path.exists(SERVICE_INFO_FILE_PATH):
+
+
+
+#
 # load info from the file into program
-  serviceDataFile = open(SERVICE_INFO_FILE_PATH, "rt")
+serviceDataFile = open(SERVICE_INFO_FILE_PATH, "rt")
 
 #
 # Read from file and store for use in program
 # Info is stored in this order: hash algorithm, master password's hash, 
 #   then all of the services and their maximum password lengths (to truncate the password to)
-<<<<<<< HEAD
-for fileMasterPassword in serviceDataFile:
-    print(fileMasterPassword) #test line
-    x = fileMasterPassword.find(":")
-    print(x)
-
-#hashAlgorithm = 
-#hashedMasterPassword = 
-=======
 
 hashAlgorithm = serviceDataFile.readline().split(':')[1].strip()
 hashedMasterPassword = serviceDataFile.readline().split(':')[1].strip()
->>>>>>> 706dfd666b1b3c09ed2af4efa2a2011daf0f7e9b
 serviceDictionary = {}
 for line in serviceDataFile:
     service = line.split(':')
     serviceDictionary[service[0]] = service[-1].strip()
 
-<<<<<<< HEAD
-hash = hashlib.new(hashAlgorithm)
-        # Ask the user for master password
-          # Ask user for master password to use for file
-masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
-=======
 #close service info file (as we're done with it for this execution)
-<<<<<<< HEAD
-
->>>>>>> 50ba6b5c81f22c2867858da48502d5e3f82aa47b
-=======
 serviceDataFile.close()
->>>>>>> 706dfd666b1b3c09ed2af4efa2a2011daf0f7e9b
 
-        # Encode string to be able to use in upcoming hash
-masterPasswordPlaintext = masterPasswordPlaintext.encode()
 
-<<<<<<< HEAD
-    # Hash the master password
-hash.update(masterPasswordPlaintext)
-hashedMasterPassword = hash.hexdigest()
-
-    # securely clean up the plaintext password
-    # to remove it from memory and then from accidental use
-masterPasswordPlaintext = ""
-del masterPasswordPlaintext
-=======
 # Ask the user for master password
-<<<<<<< HEAD
->>>>>>> 50ba6b5c81f22c2867858da48502d5e3f82aa47b
-
-        # Hash the master password
-
-<<<<<<< HEAD
-        # compare Hash to the hash stored in password data file
-       # if hashedMasterPassword ==
-=======
-# Hash the master password
->>>>>>> 50ba6b5c81f22c2867858da48502d5e3f82aa47b
-
-=======
 masterPasswordPlaintext = getpass.getpass("\tEnter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
->>>>>>> 706dfd666b1b3c09ed2af4efa2a2011daf0f7e9b
 
 # compare Hash to the hash stored in password data file
 while not verifyPass(masterPasswordPlaintext, hashedMasterPassword, hashAlgorithm):
