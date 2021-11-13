@@ -211,7 +211,7 @@ while not verifyPass(masterPasswordPlaintext, hashedMasterPassword, hashAlgorith
     masterPasswordPlaintext = getpass.getpass("Enter " + PROGRAM_NAME + " Master Password [input is hidden]: ")
 
 # Notify user of successful login
-print("\n\tLogin Successful\n")
+print("\n\tLogin Successful")
 
 #
 # Ask the user which service they want their password for
